@@ -41,6 +41,7 @@ if remote_file is not None:
     sly_fs.mkdir(experiment_path, True)
     local_file = os.path.join(experiment_path, name)
     api.file.download(team_id, remote_file, local_file)
+    sly.logger.info(f"File downloaded to: {local_file}")
 
 elif remote_folder is not None:
     if remote_folder == "/":
@@ -63,6 +64,9 @@ elif remote_folder is not None:
     experiment_path = os.path.join(metrics_dir, experiment_id)
     sly_fs.mkdir(experiment_path, True)
     api.file.download_directory(team_id, remote_folder, experiment_path, progress.iters_done_report)
+    sly.logger.info(f"Folder downloaded to: {experiment_path}")
+
+sly.logger.debug(f"Metrics directory: {metrics_dir}")
 
 args = [
     "tensorboard",
@@ -72,7 +76,6 @@ args = [
     "--port=8000",
     "--load_fast=true",
     "--reload_multifile=true",
-    # "--path-prefix",
 ]
 tensorboard_process = subprocess.Popen(args)
 sly.logger.info("TensorBoard started. It will auto-terminate after 5 hours.")
