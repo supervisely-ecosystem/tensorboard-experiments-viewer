@@ -68,10 +68,11 @@ args = [
     "tensorboard",
     "--logdir",
     metrics_dir,
-    "--host=localhost",
-    f"--port=8000",
+    "--host=0.0.0.0",
+    "--port=8000",
     "--load_fast=true",
     "--reload_multifile=true",
+    # "--path-prefix",
 ]
 tensorboard_process = subprocess.Popen(args)
 sly.logger.info("TensorBoard started. It will auto-terminate after 5 hours.")
