@@ -21,6 +21,7 @@ api = sly.Api.from_env()
 example_path = "/experiments/<project_id>_<project_name>/<task_id>_<framework_name>/logs/"
 
 if remote_file is not None:
+    sly.logger.info(f"File to download: {remote_file}")
     name = sly.fs.get_file_name_with_ext(remote_file)
     if ".tfevents." not in name:
         raise KeyError(
@@ -28,6 +29,8 @@ if remote_file is not None:
         )
 
     parts = list(Path(remote_file).parts)
+    sly.logger.debug(f"Path parts: {parts}")
+    sly.logger.debug(len(parts))
     if len(parts) != 5:
         raise KeyError(
             "Invalid path structure. Experiment not found. Please provide a valid path to file from Team Files 'experiments' folder. "
@@ -42,12 +45,14 @@ if remote_file is not None:
 elif remote_folder is not None:
     if remote_folder == "/":
         raise KeyError("Permission denied. It is not safe to run app the root directory")
-    print(f"Directory to download: {remote_folder}")
+    sly.logger.info(f"Directory to download: {remote_folder}")
     sizeb = api.file.get_directory_size(team_id, remote_folder)
     progress = sly.Progress(
         f"Downloading metrics from {remote_folder}", total_cnt=sizeb, is_size=True
     )
     parts = list(Path(remote_folder).parts)
+    sly.logger.debug(f"Path parts: {parts}")
+    sly.logger.debug(len(parts))
     if len(parts) != 4:
         raise KeyError(
             "Invalid path structure. Experiment not found. Please provide a valid folder from Team Files 'experiments' folder. "
