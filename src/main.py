@@ -12,11 +12,15 @@ if sly.is_development():
     load_dotenv(os.path.expanduser("~/supervisely.env"))
     metrics_dir = sly.app.get_data_dir()
 
+task_id = sly.env.task_id()
 team_id = sly.env.team_id()
 remote_folder = sly.env.folder(raise_not_found=False)
 remote_file = sly.env.file(raise_not_found=False)
 
 api = sly.Api.from_env()
+
+task_info = api.task.get_info_by_id(task_id)
+session_token = task_info["meta"]["sessionToken"]
 
 example_path = "/experiments/<project_id>_<project_name>/<task_id>_<framework_name>/logs/"
 
@@ -76,6 +80,8 @@ args = [
     "--port=8000",
     "--load_fast=true",
     "--reload_multifile=true",
+    "--path-prefix",
+    f"net/{session_token}",
 ]
 tensorboard_process = subprocess.Popen(args)
 sly.logger.info("TensorBoard started. It will auto-terminate after 5 hours.")
