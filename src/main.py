@@ -5,12 +5,15 @@ import supervisely as sly
 from dotenv import load_dotenv
 from pathlib import Path
 import supervisely.io.fs as sly_fs
+import supervisely.io.json as sly_json
+from utils import get_experiment_logs_by_task_ids, download_tf_log_file, download_tf_log_dir
 
 metrics_dir = "/tmp"
 if sly.is_development():
     load_dotenv("local.env")
     load_dotenv(os.path.expanduser("~/supervisely.env"))
     # load_dotenv(os.path.expanduser("~/supervisely_demo.env"))
+    # load_dotenv(os.path.expanduser("~/supervisely_umar.env"))
     metrics_dir = sly.app.get_data_dir()
 
 team_id = sly.env.team_id()
@@ -25,49 +28,32 @@ if sly.is_production():
     task_info = api.task.get_info_by_id(task_id)
     session_token = task_info["meta"]["sessionToken"]
 
-example_path = "/experiments/<project_id>_<project_name>/<task_id>_<framework_name>/logs/"
 
 if remote_file is not None:
     sly.logger.info(f"File to download: {remote_file}")
     name = sly.fs.get_file_name_with_ext(remote_file)
-    if ".tfevents." not in name:
-        raise KeyError(
-            f'Extension ".tfevents." not found. File {remote_file} is not metrics for Tensorboard.'
-        )
 
-    parts = list(Path(remote_file).parts)
-    if len(parts) != 6:
-        raise KeyError(
-            "Invalid path structure. Experiment not found. Please provide a valid path to file from Team Files 'experiments' folder. "
-            f"Example: '{example_path}events.out.tfevents.xxx'"
-        )
-    experiment_id = parts[3]
-    experiment_path = os.path.join(metrics_dir, experiment_id)
-    sly_fs.mkdir(experiment_path, True)
-    local_file = os.path.join(experiment_path, name)
-    api.file.download(team_id, remote_file, local_file)
-    sly.logger.info(f"File downloaded to: {local_file}")
+    # Tensorboard event file
+    if ".tfevents." in name:
+        download_tf_log_file(api, team_id, metrics_dir, remote_file)
+
+    elif sly_fs.get_file_ext(name) == ".json":
+        local_file = os.path.join(metrics_dir, name)
+        api.file.download(team_id, remote_file, local_file)
+        sly.logger.info(f"File downloaded to: {local_file}")
+
+        file = sly_json.load_json_file(local_file)
+
+        train_task_ids = file.get("taskIds", None)
+        if train_task_ids is None:
+            raise KeyError("Invalid JSON file. 'taskIds' field not found.")
+
+        experiment_log_paths = get_experiment_logs_by_task_ids(api, team_id, train_task_ids)
+        for remote_log_path in experiment_log_paths:
+            download_tf_log_file(api, team_id, metrics_dir, remote_log_path)
 
 elif remote_folder is not None:
-    if remote_folder == "/":
-        raise KeyError("Permission denied. It is not safe to run app the root directory")
-    sly.logger.info(f"Directory to download: {remote_folder}")
-    sizeb = api.file.get_directory_size(team_id, remote_folder)
-    progress = sly.Progress(
-        f"Downloading metrics from {remote_folder}", total_cnt=sizeb, is_size=True
-    )
-    parts = list(Path(remote_folder).parts)
-    if len(parts) != 5:
-        raise KeyError(
-            "Invalid path structure. Experiment not found. Please provide a valid folder from Team Files 'experiments' folder. "
-            f"Example: '{example_path}'"
-        )
-
-    experiment_id = parts[3]
-    experiment_path = os.path.join(metrics_dir, experiment_id)
-    sly_fs.mkdir(experiment_path, True)
-    api.file.download_directory(team_id, remote_folder, experiment_path, progress.iters_done_report)
-    sly.logger.info(f"Folder downloaded to: {experiment_path}")
+    download_tf_log_dir(api, team_id, metrics_dir, remote_folder)
 
 sly.logger.debug(f"Metrics directory: {metrics_dir}")
 
@@ -87,7 +73,7 @@ tensorboard_process = subprocess.Popen(args)
 sly.logger.info("TensorBoard started. It will auto-terminate after 5 hours.")
 
 # Set task progress
-progress = sly.Progress(f"Tensorboard server is ready.", total_cnt=1, is_size=False)
+progress = sly.Progress(f"Tensorboard server is ready", total_cnt=1, is_size=False)
 progress.iter_done_report()
 
 
