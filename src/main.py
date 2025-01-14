@@ -74,11 +74,11 @@ args = [
     "--reload_multifile=true",
 ]
 tensorboard_process = subprocess.Popen(args)
-print("TensorBoard started. It will auto-terminate after 5 hours.")
+sly.logger.info("TensorBoard started. It will auto-terminate after 5 hours.")
 
 
 def kill_tensorboard():
-    print("Terminating TensorBoard process after 5 hours...")
+    sly.logger.info("Terminating TensorBoard process after 5 hours...")
     tensorboard_process.terminate()
 
 
@@ -90,6 +90,6 @@ auto_kill_timer.start()
 try:
     tensorboard_process.wait()
 except KeyboardInterrupt:
-    print("Shutting down TensorBoard manually...")
+    sly.logger.info("Shutting down TensorBoard manually...")
     tensorboard_process.terminate()
     auto_kill_timer.cancel()
