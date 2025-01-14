@@ -1,0 +1,20 @@
+{
+  "type": "app",
+  "version": "2.0.0",
+  "name": "Tensorboard Experiments Viewer",
+  "description": "Open experiment metrics in tensorboard",
+  "categories": ["neural network", "nn tools"],
+  "icon_background": "#FFFFFF",
+  "icon": "https://user-images.githubusercontent.com/12828725/228048263-86c7b950-35cc-4f19-9fb9-51f526652898.png",
+  "poster": "https://user-images.githubusercontent.com/12828725/228066998-7bd39e8a-562e-431e-a1b7-5940007f0ae7.jpg",
+
+  "docker_image": "supervisely/tensorboard-viewer:1.0.0",
+  "entrypoint": "src/main.py",
+  "port": 8000,
+  "proxyKeepUrl": true,
+  "integrated_into": ["standalone"],
+  "community_agent": false,
+  "context_menu": {
+    "target": ["files_file", "files_folder"]
+  }
+}
