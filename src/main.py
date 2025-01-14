@@ -10,17 +10,20 @@ metrics_dir = "/tmp"
 if sly.is_development():
     load_dotenv("local.env")
     load_dotenv(os.path.expanduser("~/supervisely.env"))
+    # load_dotenv(os.path.expanduser("~/supervisely_demo.env"))
     metrics_dir = sly.app.get_data_dir()
 
-task_id = sly.env.task_id()
 team_id = sly.env.team_id()
 remote_folder = sly.env.folder(raise_not_found=False)
 remote_file = sly.env.file(raise_not_found=False)
 
+
 api = sly.Api.from_env()
 
-task_info = api.task.get_info_by_id(task_id)
-session_token = task_info["meta"]["sessionToken"]
+if sly.is_production():
+    task_id = sly.env.task_id()
+    task_info = api.task.get_info_by_id(task_id)
+    session_token = task_info["meta"]["sessionToken"]
 
 example_path = "/experiments/<project_id>_<project_name>/<task_id>_<framework_name>/logs/"
 
@@ -33,8 +36,6 @@ if remote_file is not None:
         )
 
     parts = list(Path(remote_file).parts)
-    sly.logger.debug(f"Path parts: {parts}")
-    sly.logger.debug(len(parts))
     if len(parts) != 6:
         raise KeyError(
             "Invalid path structure. Experiment not found. Please provide a valid path to file from Team Files 'experiments' folder. "
@@ -56,8 +57,6 @@ elif remote_folder is not None:
         f"Downloading metrics from {remote_folder}", total_cnt=sizeb, is_size=True
     )
     parts = list(Path(remote_folder).parts)
-    sly.logger.debug(f"Path parts: {parts}")
-    sly.logger.debug(len(parts))
     if len(parts) != 5:
         raise KeyError(
             "Invalid path structure. Experiment not found. Please provide a valid folder from Team Files 'experiments' folder. "
@@ -80,9 +79,10 @@ args = [
     "--port=8000",
     "--load_fast=true",
     "--reload_multifile=true",
-    "--path-prefix",
-    f"net/{session_token}",
 ]
+if sly.is_production():
+    args.extend(["--path_prefix", f"net/{session_token}"])
+
 tensorboard_process = subprocess.Popen(args)
 sly.logger.info("TensorBoard started. It will auto-terminate after 5 hours.")
 
