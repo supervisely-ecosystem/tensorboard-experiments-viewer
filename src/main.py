@@ -80,6 +80,10 @@ args = [
 tensorboard_process = subprocess.Popen(args)
 sly.logger.info("TensorBoard started. It will auto-terminate after 5 hours.")
 
+# Set task progress
+progress = sly.Progress(f"Tensorboard server is ready.", total_cnt=1, is_size=False)
+progress.iter_done_report(1)
+
 
 def kill_tensorboard():
     sly.logger.info("Terminating TensorBoard process after 5 hours...")
