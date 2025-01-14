@@ -31,7 +31,7 @@ if remote_file is not None:
     parts = list(Path(remote_file).parts)
     sly.logger.debug(f"Path parts: {parts}")
     sly.logger.debug(len(parts))
-    if len(parts) != 5:
+    if len(parts) != 6:
         raise KeyError(
             "Invalid path structure. Experiment not found. Please provide a valid path to file from Team Files 'experiments' folder. "
             f"Example: '{example_path}events.out.tfevents.xxx'"
@@ -53,7 +53,7 @@ elif remote_folder is not None:
     parts = list(Path(remote_folder).parts)
     sly.logger.debug(f"Path parts: {parts}")
     sly.logger.debug(len(parts))
-    if len(parts) != 4:
+    if len(parts) != 5:
         raise KeyError(
             "Invalid path structure. Experiment not found. Please provide a valid folder from Team Files 'experiments' folder. "
             f"Example: '{example_path}'"
