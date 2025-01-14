@@ -81,7 +81,7 @@ args = [
     "--reload_multifile=true",
 ]
 if sly.is_production():
-    args.extend(["--path_prefix", f"net/{session_token}"])
+    args.extend(["--path_prefix", f"/net/{session_token}"])
 
 tensorboard_process = subprocess.Popen(args)
 sly.logger.info("TensorBoard started. It will auto-terminate after 5 hours.")
