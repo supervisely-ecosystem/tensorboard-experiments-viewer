@@ -50,7 +50,10 @@ if remote_file is not None:
 
         experiment_log_paths = get_experiment_logs_by_task_ids(api, team_id, train_task_ids)
         for remote_log_path in experiment_log_paths:
-            download_tf_log_file(api, team_id, metrics_dir, remote_log_path)
+            try:
+                download_tf_log_file(api, team_id, metrics_dir, remote_log_path)
+            except:
+                sly.logger.warning(f"Failed to download file: {remote_log_path}")
 
 elif remote_folder is not None:
     download_tf_log_dir(api, team_id, metrics_dir, remote_folder)
