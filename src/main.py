@@ -44,16 +44,33 @@ if remote_file is not None:
 
         file = sly_json.load_json_file(local_file)
 
-        train_task_ids = file.get("taskIds", None)
+        train_task_ids = None
+        possible_keys = [
+            "taskIds",
+            "train_task_ids",
+            "training_task_ids",
+            "trainTaskIds",
+            "trainingTaskIds",
+        ]
+        for key in possible_keys:
+            train_task_ids = file.get(key, None)
+            if train_task_ids is not None:
+                break
         if train_task_ids is None:
-            raise KeyError("Invalid JSON file. 'taskIds' field not found.")
+            raise KeyError(
+                f"Invalid JSON file. Field with training task ids not found. One of the following keys is expected: {', '.join(possible_keys)}"
+            )
 
         experiment_log_paths = get_experiment_logs_by_task_ids(api, team_id, train_task_ids)
         for remote_log_path in experiment_log_paths:
             try:
                 download_tf_log_file(api, team_id, metrics_dir, remote_log_path)
-            except:
-                sly.logger.warning(f"Failed to download file: {remote_log_path}")
+            except Exception as e:
+                sly.logger.warning(
+                    f"Failed to download file: '{remote_log_path}'. Error: '{repr(e)}'"
+                )
+    else:
+        raise KeyError("Invalid file extension. Only .json and .tfevents files are supported.")
 
 elif remote_folder is not None:
     download_tf_log_dir(api, team_id, metrics_dir, remote_folder)

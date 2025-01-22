@@ -5,7 +5,7 @@
 
 <p align="center">
   <a href="#Overview">Overview</a> •
-  <a href="#How-To-Use">How To Use</a> • 
+  <a href="#How-To-Use">How To Use</a> •
   <a href="#Acknowledgment">Acknowledgment</a>
 </p>
 
@@ -19,13 +19,29 @@
 
 ## Overview
 
-You can run this app only on files located in the `logs` directory with `*.tfevents.*` extension inside the artifacts directory of the training output or on the `logs` directory itself.
+Run Tensorboard from the context menu of `.tfevents.` file, directory or `.json` file in Team Files.
 
-Example path to the `logs` directory: `/experiments/<project_id>_<project_name>/<task_id>_<framework>/logs/`
+When running app from the context menu of `.json` file, it should include one of the following keys:
+
+- `taskIds`
+- `train_task_ids`
+- `training_task_ids`
+- `trainTaskIds`
+- `trainingTaskIds`
+
+The value should be a list of task ids of training sessions that you want to view and compare in Tensorboard.
+
+Example of `.json` file:
+
+```json
+{
+  "trainingTaskIds": [2315, 2316, 2317]
+}
+```
 
 # How To Use
 
-1. Run app from the context menu of directory or file in **Team Files** -> `Run app` -> `Tensorboard`
+1. Run app from the context menu of directory or file in **Team Files** -> `Run app` -> `Tensorboard Experiments Viewer`
 
 2. Wait for the tensorboard server to start. You will see a notification when the server is ready.
 

@@ -4,7 +4,7 @@ from typing import List
 from supervisely import Api, logger, Progress
 import supervisely.io.fs as sly_fs
 
-example_path = "/experiments/<project_id>_<project_name>/<task_id>_<framework_name>/logs/"
+# example_path = "/experiments/<project_id>_<project_name>/<task_id>_<framework_name>/logs/"
 
 
 def get_experiment_logs_by_task_ids(api: Api, team_id: int, ids: List[int]):
@@ -20,17 +20,15 @@ def get_experiment_logs_by_task_ids(api: Api, team_id: int, ids: List[int]):
 
 def download_tf_log_file(api: Api, team_id: int, metrics_dir: str, remote_file: str):
     parts = list(Path(remote_file).parts)
-    if len(parts) != 6:
-        raise KeyError(
-            "Invalid path structure. Experiment not found. Please provide a valid path to file from Team Files 'experiments' folder. "
-            f"Example: '{example_path}events.out.tfevents.xxx'"
-        )
-    experiment_id = parts[3]
-    experiment_path = os.path.join(metrics_dir, experiment_id)
-    sly_fs.mkdir(experiment_path, True)
-    local_file = os.path.join(experiment_path, sly_fs.get_file_name_with_ext(remote_file))
+    if len(parts) == 6:
+        experiment_id = parts[3]
+        experiment_path = os.path.join(metrics_dir, experiment_id)
+        sly_fs.mkdir(experiment_path, True)
+        local_file = os.path.join(experiment_path, sly_fs.get_file_name_with_ext(remote_file))
+    else:
+        local_file = os.path.join(metrics_dir, sly_fs.get_file_name_with_ext(remote_file))
     api.file.download(team_id, remote_file, local_file)
-    logger.info(f"File downloaded to: {local_file}")
+    logger.debug(f"File downloaded to: {local_file}")
 
 
 def download_tf_log_dir(api: Api, team_id: int, metrics_dir: str, remote_folder: str):
@@ -40,14 +38,11 @@ def download_tf_log_dir(api: Api, team_id: int, metrics_dir: str, remote_folder:
     sizeb = api.file.get_directory_size(team_id, remote_folder)
     progress = Progress(f"Downloading metrics from {remote_folder}", total_cnt=sizeb, is_size=True)
     parts = list(Path(remote_folder).parts)
-    if len(parts) != 5:
-        raise KeyError(
-            "Invalid path structure. Experiment not found. Please provide a valid folder from Team Files 'experiments' folder. "
-            f"Example: '{example_path}'"
-        )
-
-    experiment_id = parts[3]
-    experiment_path = os.path.join(metrics_dir, experiment_id)
-    sly_fs.mkdir(experiment_path, True)
+    if len(parts) == 5:
+        experiment_id = parts[3]
+        experiment_path = os.path.join(metrics_dir, experiment_id)
+        sly_fs.mkdir(experiment_path, True)
+    else:
+        experiment_path = metrics_dir
     api.file.download_directory(team_id, remote_folder, experiment_path, progress.iters_done_report)
     logger.info(f"Folder downloaded to: {experiment_path}")
