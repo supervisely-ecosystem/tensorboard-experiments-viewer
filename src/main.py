@@ -35,7 +35,12 @@ if remote_file is not None:
 
     # Tensorboard event file
     if ".tfevents." in name:
-        download_tf_log_file(api, team_id, metrics_dir, remote_file)
+        try:
+            r_files = eval(remote_file)  # list of files
+        except:
+            r_files = [remote_file]  # single file
+        for r_file in r_files:
+            download_tf_log_file(api, team_id, metrics_dir, r_file)
 
     elif sly_fs.get_file_ext(name) == ".json":
         local_file = os.path.join(metrics_dir, name)
@@ -73,7 +78,12 @@ if remote_file is not None:
         raise KeyError("Invalid file extension. Only .json and .tfevents files are supported.")
 
 elif remote_folder is not None:
-    download_tf_log_dir(api, team_id, metrics_dir, remote_folder)
+    try:
+        r_folders = eval(remote_folder)  # list of folders
+    except:
+        r_folders = [remote_folder]  # single folder
+    for r_folder in r_folders:
+        download_tf_log_dir(api, team_id, metrics_dir, r_folder)
 
 sly.logger.debug(f"Metrics directory: {metrics_dir}")
 
